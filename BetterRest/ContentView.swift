@@ -9,7 +9,13 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var wakeUpDate = Date()
+    @State private var wakeUpDate: Date =  {
+        var dateComponent = DateComponents()
+        dateComponent.hour = 7
+        dateComponent.minute = 0
+        
+        return Calendar.current.date(from: dateComponent) ?? Date()
+    }()
     @State private var sleepAmount = 8.0
     @State private var coffeeCupAmount = 1
     
@@ -19,32 +25,43 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                Text("When you wont wake up")
-                    .font(.headline)
-                
-                DatePicker("Please enter a time", selection: self.$wakeUpDate, in: Date()..., displayedComponents: .hourAndMinute)
+            Form {
+                Section{
+                    Text("When do you wont wake up")
+                        .font(.headline)
+                    
+                    DatePicker("Please enter a time", selection: self.$wakeUpDate, displayedComponents: .hourAndMinute)
+                    .datePickerStyle(WheelDatePickerStyle())
                     .labelsHidden()
-                
-                Stepper(value: self.$sleepAmount, in: 4...12, step: 0.25) {
-                    Text("Sleep amount \(self.sleepAmount, specifier: "%.2f") hours")
+                    //.labelsHidden()
+                        
+                    
                 }
-
-                Stepper(value: self.$coffeeCupAmount, in: 0...20, step: 1) {
-                    if self.coffeeCupAmount > 1 {
-                        Text("Coffee cup amount \(self.coffeeCupAmount) caps")
-                    } else
-                    {
-                        Text("Coffee cup amount \(self.coffeeCupAmount) cap")
+                
+                Section (header: Text("Enter you sleep amount").font(.title)) {
+                    Stepper(value: self.$sleepAmount, in: 4...12, step: 0.25) {
+                        Text("\(self.sleepAmount, specifier: "%.2f") hours")
                     }
                 }
 
-                
-                Spacer()
+                Section (header: Text("Enter amount of coffee cup").font(.title)) {
+                    Stepper(value: self.$coffeeCupAmount, in: 0...20, step: 1) {
+                        if self.coffeeCupAmount > 1 {
+                            Text("\(self.coffeeCupAmount) caps")
+                        } else
+                        {
+                            Text("\(self.coffeeCupAmount) cap")
+                        }
+                    }
+                }
             }
             .navigationBarTitle("Better Rest Then Dead")
             .navigationBarItems(trailing: Button(action: self.calculateBedTime) {
                 Text("Calculate")
+                .padding()
+                    .foregroundColor(Color.blue)
+                .background(Color.green)
+                .clipShape(Capsule())
             } )
             .alert(isPresented: self.$isShowAlert) {
                 Alert(title: Text(self.alertTitle), message: Text(self.alerText), dismissButton: .default(Text("OK")))
@@ -85,6 +102,15 @@ struct ContentView: View {
         }
         
         self.isShowAlert = true
+    }
+    
+    
+    func makeDefaultWaitTime() -> Date {
+        var dateComponent = DateComponents()
+        dateComponent.hour = 7
+        dateComponent.minute = 0
+        
+        return Calendar.current.date(from: dateComponent) ?? Date()
     }
 }
 
